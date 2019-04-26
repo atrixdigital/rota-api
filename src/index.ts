@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { ApolloServer, Config } from "apollo-server-express";
 import Express from "express";
 import cors from "cors";
-import { formatArgumentValidationError } from "type-graphql";
+// import { formatArgumentValidationError } from "type-graphql";
 import * as path from "path";
 import {
   createConnection,
@@ -21,7 +21,7 @@ const main = async () => {
   });
   const apolloServerOptions: Config = {
     schema: await createSchema(),
-    formatError: formatArgumentValidationError,
+    // formatError: formatArgumentValidationError,
     playground: true
   };
   if (process.env.NODE_ENV === "production") {
