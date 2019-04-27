@@ -2,7 +2,7 @@ import { Field, InputType } from "type-graphql";
 // import { SkillIDsInput } from "../shared/Inputs";
 
 @InputType()
-export class CreateUserInput {
+class BaseInput {
   @Field()
   firstName: string;
 
@@ -21,6 +21,12 @@ export class CreateUserInput {
   @Field()
   roleID: string;
 }
+
+@InputType()
+export class CreateUserInput extends BaseInput {}
+
+@InputType()
+export class UpdateUserInput extends BaseInput {}
 
 // @InputType()
 // export class AssignProjectSkillsInput extends SkillIDsInput {

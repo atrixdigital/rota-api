@@ -1,9 +1,14 @@
 import { Resolver, ClassType, Mutation, Arg, Query } from "type-graphql";
 
-export function createBaseResolver<T extends ClassType, I extends ClassType>(
+export function createBaseResolver<
+  T extends ClassType,
+  I extends ClassType,
+  Update extends ClassType
+>(
   suffix: string,
   returnType: T,
   inputType: I,
+  updateType: Update,
   entity: any
 ) {
   @Resolver({ isAbstract: true })
@@ -23,12 +28,28 @@ export function createBaseResolver<T extends ClassType, I extends ClassType>(
       return entity.create(data).save();
     }
 
+    @Mutation(() => returnType, { name: `updateBy${suffix}ID` })
+    async updateByID(
+      @Arg("data", () => updateType) data: any,
+      @Arg("id") id: string
+    ) {
+      const entityData = await this.get(id);
+      return this.update(data, entityData);
+    }
+
     @Mutation(() => [returnType], { name: `createMulti${suffix}` })
     async createMulti(@Arg("data", () => [inputType]) data: any[]) {
       const insertedData = await data.map(
         async obj => await entity.create(obj).save()
       );
       return insertedData;
+    }
+
+    async update(data: any, entityData: any) {
+      for (let field in data) {
+        entityData[field] = data[field];
+      }
+      return entity.save(entityData);
     }
 
     async getManyByPropertyID<R>(

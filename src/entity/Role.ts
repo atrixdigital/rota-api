@@ -1,6 +1,14 @@
-import { Entity, ObjectID, ObjectIdColumn, Column, BaseEntity } from "typeorm";
+import {
+  Entity,
+  ObjectID,
+  ObjectIdColumn,
+  Column,
+  BaseEntity,
+  Index
+} from "typeorm";
 import { ObjectType, Field, ID } from "type-graphql";
 import { User } from "./User";
+import BaseMethods from "./shared/baseMethods";
 
 @ObjectType()
 @Entity()
@@ -11,8 +19,13 @@ export class Role extends BaseEntity {
 
   @Field()
   @Column()
+  @Index({ unique: true })
   title: string;
 
   @Field(() => [User])
-  users: User[];
+  async users(): Promise<User[]> {
+    return BaseMethods.getMultiRelationData(User, {
+      where: { roleID: this.id }
+    });
+  }
 }

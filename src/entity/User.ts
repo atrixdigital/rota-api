@@ -1,7 +1,15 @@
-import { Entity, ObjectID, ObjectIdColumn, Column, BaseEntity } from "typeorm";
+import {
+  Entity,
+  ObjectID,
+  ObjectIdColumn,
+  Column,
+  BaseEntity,
+  Index
+} from "typeorm";
 import { ObjectType, Field, ID } from "type-graphql";
 import { Role } from "./Role";
 import { Department } from "./Department";
+import BaseMethods from "./shared/baseMethods";
 
 @ObjectType()
 @Entity()
@@ -19,7 +27,8 @@ export class User extends BaseEntity {
   lastName: string;
 
   @Field()
-  @Column({ unique: true })
+  @Column()
+  @Index({ unique: true })
   email: string;
 
   @Field()
@@ -33,9 +42,15 @@ export class User extends BaseEntity {
   @Column()
   roleID: string;
 
-  @Field(() => Role)
-  role: Role;
+  @Field(() => Role, { nullable: true })
+  async role(): Promise<Role | null> {
+    return BaseMethods.getRelationData(Role, this.roleID);
+  }
 
   @Field(() => [Department])
-  departments: Department[];
+  async departments(): Promise<Department[]> {
+    return BaseMethods.getMultiRelationData(Department, {
+      where: { userID: this.id }
+    });
+  }
 }
