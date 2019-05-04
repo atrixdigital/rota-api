@@ -26,7 +26,7 @@ const main = async () => {
     schema: await createSchema(),
     // formatError: formatArgumentValidationError,
     playground: true,
-    context: ({ req }: any) => ({ req })
+    context: ({ req, res }: any) => ({ req, res })
   };
   if (process.env.NODE_ENV === "production") {
     apolloServerOptions.introspection = true;
@@ -35,9 +35,6 @@ const main = async () => {
   const app = Express();
   const RedisStore = connectRedis(session);
   app.use(Express.static("assets"));
-  app.get("/", (_, res) => {
-    res.send("Working");
-  });
   app.use(
     cors({
       credentials: true,
@@ -60,6 +57,9 @@ const main = async () => {
       }
     })
   );
+  app.get("/", (_, res) => {
+    res.send("Working");
+  });
   const port = process.env.PORT || 8080;
   app.use(Express.static(path.join(__dirname, "assets")));
   apolloServer.applyMiddleware({

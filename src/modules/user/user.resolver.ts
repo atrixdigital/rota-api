@@ -46,11 +46,14 @@ export class UserResolver extends BaseResolver {
       return null;
     }
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid || !user.confirmed || !user.appproved) {
+    if (!valid) {
       return null;
     }
     const userRole = await user.role();
     if (!userRole) {
+      return null;
+    }
+    if (userRole.title !== "Admin" && (!user.confirmed || !user.appproved)) {
       return null;
     }
     if (userRole.title === "Staff") {
@@ -115,7 +118,6 @@ export class UserResolver extends BaseResolver {
           console.log(err);
           return rej(false);
         }
-
         ctx.res.clearCookie("qid");
         return res(true);
       })
