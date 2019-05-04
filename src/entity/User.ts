@@ -27,6 +27,11 @@ export class User extends BaseEntity {
   lastName: string;
 
   @Field()
+  name(): string {
+    return this.firstName + " " + this.lastName;
+  }
+
+  @Field()
   @Column()
   @Index({ unique: true })
   email: string;
@@ -38,6 +43,9 @@ export class User extends BaseEntity {
   @Field({ defaultValue: false })
   @Column({ type: Boolean, default: false })
   appproved: boolean;
+
+  @Column("bool", { default: false })
+  confirmed: boolean;
 
   @Column()
   roleID: string;
