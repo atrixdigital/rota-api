@@ -38,7 +38,10 @@ const main = async () => {
   app.use(
     cors({
       credentials: true,
-      origin: true
+      origin:
+        process.env.NODE_ENV === "production"
+          ? (process.env.FRONTEND_URL as string)
+          : "*"
     })
   );
   app.use(

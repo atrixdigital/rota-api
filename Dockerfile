@@ -1,7 +1,7 @@
 FROM node:10.15.1
 
 # Create app directory
-WORKDIR /my-profile
+WORKDIR /rota-api
 
 COPY ./package.json .
 

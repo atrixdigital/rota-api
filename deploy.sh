@@ -1,6 +1,6 @@
 #!/bin/bash
 
 yarn build
-docker build -t osama/my-profile:latest . --no-cache
-heroku container:push --app=osama-ahmed-resume-server web
-heroku container:release --app=osama-ahmed-resume-server web
+docker build -t osama/rota-api:latest . --no-cache
+heroku container:push --app=rota-api web
+heroku container:release --app=rota-api web
