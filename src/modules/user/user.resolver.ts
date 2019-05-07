@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Arg, Ctx } from "type-graphql";
+import { Resolver, Mutation, Arg, Ctx, Query } from "type-graphql";
 import bcrypt from "bcryptjs";
 import { v4 } from "uuid";
 import { createBaseResolver } from "../shared/createBaseResolver";
@@ -122,5 +122,14 @@ export class UserResolver extends BaseResolver {
         return res(true);
       })
     );
+  }
+
+  @Query(() => User, { nullable: true })
+  async me(
+    @Ctx()
+    ctx: MyContext
+  ) {
+    const { userID } = ctx.req.session!;
+    return userID ? User.findOne(userID) : null;
   }
 }
