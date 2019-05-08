@@ -1,4 +1,11 @@
-import { Resolver, Mutation, Arg, Ctx, Query } from "type-graphql";
+import {
+  Resolver,
+  Mutation,
+  Arg,
+  Ctx,
+  Query,
+  UseMiddleware
+} from "type-graphql";
 import bcrypt from "bcryptjs";
 import { v4 } from "uuid";
 import { createBaseResolver } from "../shared/createBaseResolver";
@@ -6,7 +13,8 @@ import { User } from "../../entity/User";
 import {
   CreateUserInput,
   UpdateUserInput,
-  ChangePasswordInput
+  ChangePasswordInput,
+  GetUserByRoleInput
 } from "./Inputs";
 import { MyContext } from "../../types/MyContext";
 import { redis } from "../../redis";
@@ -16,6 +24,8 @@ import {
   forgotPasswordPrefix,
   confirmUserPrefix
 } from "../constants/redisPrefixes";
+import { isAuth } from "../middleware/isAuth";
+import { Role } from "../../entity/Role";
 
 const BaseResolver = createBaseResolver(
   "User",
@@ -27,6 +37,29 @@ const BaseResolver = createBaseResolver(
 
 @Resolver(User)
 export class UserResolver extends BaseResolver {
+  @UseMiddleware(isAuth)
+  @Query(() => [User], { name: `getAllUserByRole` })
+  async getAllUserByRole(
+    @Arg("data", () => GetUserByRoleInput, { nullable: true })
+    data?: GetUserByRoleInput | null
+  ) {
+    // get admin role
+    const role = await Role.findOne({ where: { title: "Admin" } });
+    if (!role) {
+      return [];
+    }
+    let selectedRole: Role | undefined = undefined;
+    if (data) {
+      selectedRole = await Role.findOne({ where: { title: data.roleType } });
+    }
+    const user = await User.find({
+      where: { roleID: { $ne: role.id.toString() } }
+    });
+    return user.filter(({ roleID }) =>
+      selectedRole ? roleID === selectedRole.id.toString() : true
+    );
+  }
+
   @Mutation(() => User, { name: `register` })
   async register(@Arg("data", () => CreateUserInput) data: CreateUserInput) {
     const hashedPassword = await bcrypt.hash(data.password, 12);

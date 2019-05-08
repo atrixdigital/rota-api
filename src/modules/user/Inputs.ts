@@ -16,7 +16,7 @@ class BaseInput {
   @Field()
   password: string;
 
-  @Field(() => Boolean, { nullable: true })
+  @Field(() => Boolean, { defaultValue: false })
   approved?: boolean;
 
   @Field()
@@ -37,6 +37,12 @@ export class ChangePasswordInput {
   @Field()
   @MinLength(5)
   password: string;
+}
+
+@InputType()
+export class GetUserByRoleInput {
+  @Field()
+  roleType: string;
 }
 
 // @InputType()
