@@ -47,7 +47,7 @@
     "db:setup": "ts-node ./src/test-utils/setup.ts",
     "build": "rimraf ./dist && tsc && cp -r ./src/assets/ ./dist/",
     "start:prod": "NODE_ENV=production SERVER_URL=https://rota-api.herokuapp.com FRONTEND_URL=https://rota-web.herokuapp.com PORT=8080 node dist/index.js",
-    "start:prod:local": "NODE_ENV=production SERVER_URL=http://localhost:8080 FRONTEND_URL=http://localhost:3000 PORT=8080 node dist/index.js",
+    "start:prod:local": "npm run build && NODE_ENV=production SERVER_URL=http://localhost:8080 FRONTEND_URL=http://localhost:3000 PORT=8080 node dist/index.js",
     "test": "npm run db:setup && jest --detectOpenHandles"
   }
 }

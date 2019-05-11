@@ -1,5 +1,5 @@
-import { Field, InputType } from "type-graphql";
 import { MinLength } from "class-validator";
+import { Field, InputType } from "type-graphql";
 // import { SkillIDsInput } from "../shared/Inputs";
 
 @InputType()
@@ -41,8 +41,13 @@ export class ChangePasswordInput {
 
 @InputType()
 export class GetUserByRoleInput {
-  @Field()
-  roleType: string;
+  @Field({ nullable: true })
+  roleType?: string;
+}
+@InputType()
+export class GetUserByFilterInput extends GetUserByRoleInput {
+  @Field({ nullable: true })
+  approved?: boolean;
 }
 
 // @InputType()

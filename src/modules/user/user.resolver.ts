@@ -1,31 +1,32 @@
+import bcrypt from "bcryptjs";
 import {
-  Resolver,
-  Mutation,
   Arg,
   Ctx,
+  Mutation,
   Query,
+  Resolver,
   UseMiddleware
 } from "type-graphql";
-import bcrypt from "bcryptjs";
 import { v4 } from "uuid";
-import { createBaseResolver } from "../shared/createBaseResolver";
+import { Role } from "../../entity/Role";
 import { User } from "../../entity/User";
-import {
-  CreateUserInput,
-  UpdateUserInput,
-  ChangePasswordInput,
-  GetUserByRoleInput
-} from "./Inputs";
-import { MyContext } from "../../types/MyContext";
 import { redis } from "../../redis";
+import { MyContext } from "../../types/MyContext";
 import { createConfirmationUrl } from "../../utils/createConfirmationUrl";
 import { sendEmail } from "../../utils/sendEmail";
 import {
-  forgotPasswordPrefix,
-  confirmUserPrefix
+  confirmUserPrefix,
+  forgotPasswordPrefix
 } from "../constants/redisPrefixes";
 import { isAuth } from "../middleware/isAuth";
-import { Role } from "../../entity/Role";
+import { createBaseResolver } from "../shared/createBaseResolver";
+import {
+  ChangePasswordInput,
+  CreateUserInput,
+  GetUserByFilterInput,
+  GetUserByRoleInput,
+  UpdateUserInput
+} from "./Inputs";
 
 const BaseResolver = createBaseResolver(
   "User",
@@ -60,6 +61,27 @@ export class UserResolver extends BaseResolver {
     );
   }
 
+  @UseMiddleware(isAuth)
+  @Query(() => [User], { name: `getAllUserByFilter` })
+  async getAllUserByFiler(
+    @Arg("data", () => GetUserByFilterInput, { nullable: true })
+    data?: GetUserByFilterInput | null
+  ) {
+    const users = await this.getAllUserByRole({
+      roleType: data && data.roleType ? data.roleType : undefined
+    });
+    if (users && data && data.approved !== undefined) {
+      if (data.approved) {
+        // show approved result
+        return users.filter(({ appproved }) => appproved === true);
+      }
+      return users.filter(
+        ({ appproved }) => appproved === false || appproved === undefined
+      );
+    }
+    return users;
+  }
+
   @Mutation(() => User, { name: `register` })
   async register(@Arg("data", () => CreateUserInput) data: CreateUserInput) {
     const hashedPassword = await bcrypt.hash(data.password, 12);
@@ -68,29 +90,34 @@ export class UserResolver extends BaseResolver {
     return user;
   }
 
-  @Mutation(() => User, { nullable: true })
+  @Mutation(() => User)
   async login(
     @Arg("email") email: string,
     @Arg("password") password: string,
     @Ctx() ctx: MyContext
-  ): Promise<User | null> {
+  ): Promise<User | Error> {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return null;
+      return new Error("User not found.");
     }
+    const { appproved, confirmed } = user;
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      return null;
+      return new Error("Password is incorrect");
     }
     const userRole = await user.role();
     if (!userRole) {
-      return null;
+      return new Error("User has no role assigned yet");
     }
-    if (userRole.title !== "Admin" && (!user.confirmed || !user.appproved)) {
-      return null;
+    const { title } = userRole;
+    if (title !== "Admin" && title !== "Manager") {
+      return new Error("No Access");
     }
-    if (userRole.title === "Staff") {
-      return null;
+    if (title !== "Admin") {
+      // check for confimed and approved
+      if (!appproved && !confirmed) {
+        return new Error("Check your email inbox");
+      }
     }
     ctx.req.session!.userID = user.id;
     return user;
@@ -102,8 +129,28 @@ export class UserResolver extends BaseResolver {
     if (!userId) {
       return false;
     }
-    await User.update({ id: parseInt(userId, 10) }, { confirmed: true });
-    await redis.del(token);
+    const user = await User.findOne(userId);
+    if (!user) {
+      return false;
+    }
+    user.confirmed = true;
+    user.save();
+    redis.del(token);
+    return true;
+  }
+
+  @UseMiddleware(isAuth)
+  @Mutation(() => Boolean, { name: `approvedUser` })
+  async approvedUser(
+    @Arg("approved", () => Boolean) approved: boolean,
+    @Arg("userID", () => String) userID: string
+  ) {
+    const user = await User.findOne(userID);
+    if (!user) {
+      return false;
+    }
+    user.appproved = approved;
+    await user.save();
     return true;
   }
 
