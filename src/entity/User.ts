@@ -50,6 +50,9 @@ export class User extends BaseEntity {
   @Column()
   roleID: string;
 
+  @Column({ nullable: true })
+  deparmtnetID?: string;
+
   @Field(() => Role, { nullable: true })
   async role(): Promise<Role | null> {
     return BaseMethods.getRelationData(Role, this.roleID);

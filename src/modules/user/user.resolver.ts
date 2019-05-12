@@ -85,7 +85,11 @@ export class UserResolver extends BaseResolver {
   @Mutation(() => User, { name: `register` })
   async register(@Arg("data", () => CreateUserInput) data: CreateUserInput) {
     const hashedPassword = await bcrypt.hash(data.password, 12);
-    const user = await super.create({ ...data, password: hashedPassword });
+    const user = await super.create({
+      ...data,
+      password: hashedPassword,
+      approved: true
+    });
     await sendEmail(data.email, await createConfirmationUrl(user.id));
     return user;
   }
