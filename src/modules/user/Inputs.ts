@@ -16,11 +16,20 @@ class BaseInput {
   @Field()
   password: string;
 
+  @Field()
+  phone: string;
+
   @Field(() => Boolean, { defaultValue: false })
-  approved?: boolean;
+  appproved?: boolean;
 
   @Field()
   roleID: string;
+
+  @Field({ nullable: true })
+  departmentID?: string;
+
+  @Field({ nullable: true })
+  areaID?: string;
 }
 
 @InputType()

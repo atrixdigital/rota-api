@@ -1,9 +1,9 @@
 import {
-  Resolver,
+  Arg,
   ClassType,
   Mutation,
-  Arg,
   Query,
+  Resolver,
   UseMiddleware
 } from "type-graphql";
 import { isAuth } from "../middleware/isAuth";

@@ -11,8 +11,11 @@ class BaseInput {
   @Field()
   totalHours: number;
 
+  @Field({ nullable: true })
+  joinTime?: string;
+
   @Field()
-  userID: string;
+  staffID: string;
 }
 
 @InputType()

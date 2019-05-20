@@ -49,15 +49,24 @@ export class UserResolver extends BaseResolver {
     if (!role) {
       return [];
     }
-    let selectedRole: Role | undefined = undefined;
+    let selectedRole: Role[] | undefined = undefined;
     if (data) {
-      selectedRole = await Role.findOne({ where: { title: data.roleType } });
+      selectedRole = await Role.find({
+        where: {
+          title:
+            data.roleType === "*"
+              ? { $nin: ["Admin", "Manager"] }
+              : data.roleType
+        }
+      });
     }
     const user = await User.find({
       where: { roleID: { $ne: role.id.toString() } }
     });
     return user.filter(({ roleID }) =>
-      selectedRole ? roleID === selectedRole.id.toString() : true
+      selectedRole && selectedRole.length > 0
+        ? !!selectedRole.find(r => r.id.toString() === roleID)
+        : true
     );
   }
 
@@ -92,6 +101,25 @@ export class UserResolver extends BaseResolver {
     });
     await sendEmail(data.email, await createConfirmationUrl(user.id));
     return user;
+  }
+
+  @Mutation(() => [User], { name: `registerMulti` })
+  async registerMulti(
+    @Arg("data", () => [CreateUserInput]) data: CreateUserInput[]
+  ) {
+    const users: User[] = [];
+    for (let i = 0; i < data.length; i++) {
+      users.push(await this.register(data[i]));
+    }
+    return users;
+    // const hashedPassword = await bcrypt.hash(data.password, 12);
+    // const user = await super.create({
+    //   ...data,
+    //   password: hashedPassword,
+    //   approved: true
+    // });
+    // await sendEmail(data.email, await createConfirmationUrl(user.id));
+    // return user;
   }
 
   @Mutation(() => User)

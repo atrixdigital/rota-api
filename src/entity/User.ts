@@ -7,8 +7,11 @@ import {
   ObjectID,
   ObjectIdColumn
 } from "typeorm";
+import { Area } from "./Area";
 import { Department } from "./Department";
+import { Hospital } from "./Hospital";
 import { Role } from "./Role";
+import { Schedule } from "./Schedule";
 import BaseMethods from "./shared/baseMethods";
 
 @ObjectType()
@@ -40,6 +43,10 @@ export class User extends BaseEntity {
   @Column()
   password: string;
 
+  @Field()
+  @Column()
+  phone: string;
+
   @Field({ defaultValue: false })
   @Column({ type: Boolean, default: false })
   appproved: boolean;
@@ -50,18 +57,62 @@ export class User extends BaseEntity {
   @Column()
   roleID: string;
 
-  @Column({ nullable: true })
-  deparmtnetID?: string;
-
   @Field(() => Role, { nullable: true })
   async role(): Promise<Role | null> {
     return BaseMethods.getRelationData(Role, this.roleID);
   }
 
-  @Field(() => [Department])
-  async departments(): Promise<Department[]> {
-    return BaseMethods.getMultiRelationData(Department, {
-      where: { userID: this.id }
+  @Field(() => Hospital, { nullable: true })
+  async hopital(): Promise<Hospital | null> {
+    return BaseMethods.getRelationDataCondition(Hospital, {
+      where: {
+        adminID: this.id.toString()
+      }
+    });
+  }
+
+  @Column({ nullable: true })
+  departmentID?: string;
+
+  @Column({ nullable: true })
+  areaID?: string;
+
+  @Field(() => Department, { nullable: true })
+  async department(): Promise<Department | null> {
+    const role = await this.role();
+    if (!role) {
+      return null;
+    }
+    if (role.title === "Admin") {
+      return null;
+    }
+    if (role.title === "Manager") {
+      return BaseMethods.getRelationDataCondition(Department, {
+        where: {
+          managerID: this.id.toString()
+        }
+      });
+    }
+    if (!this.departmentID) {
+      return null;
+    }
+    return BaseMethods.getRelationData(Department, this.departmentID);
+  }
+
+  @Field(() => Area, { nullable: true })
+  async area(): Promise<Area | null> {
+    if (!this.areaID) {
+      return null;
+    }
+    return BaseMethods.getRelationData(Area, this.areaID);
+  }
+
+  @Field(() => [Schedule])
+  async schedules(): Promise<Schedule[]> {
+    return BaseMethods.getMultiRelationData(Schedule, {
+      where: {
+        staffID: this.id.toString()
+      }
     });
   }
 }

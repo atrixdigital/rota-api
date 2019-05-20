@@ -1,7 +1,7 @@
-import { Entity, ObjectID, ObjectIdColumn, Column, BaseEntity } from "typeorm";
-import { ObjectType, Field, ID } from "type-graphql";
-import { User } from "./User";
+import { Field, ID, ObjectType } from "type-graphql";
+import { BaseEntity, Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 import BaseMethods from "./shared/baseMethods";
+import { User } from "./User";
 
 @ObjectType()
 @Entity()
@@ -22,11 +22,15 @@ export class Schedule extends BaseEntity {
   @Column()
   totalHours: number;
 
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  joinTime?: string;
+
   @Column()
-  userID: string;
+  staffID: string;
 
   @Field(() => User, { nullable: true })
-  async user(): Promise<User | null> {
-    return BaseMethods.getRelationData(User, this.userID);
+  async staff(): Promise<User | null> {
+    return BaseMethods.getRelationData(User, this.staffID);
   }
 }

@@ -7,17 +7,11 @@ class BaseInput {
   title: string;
 
   @Field()
-  email: string;
-
-  @Field()
-  phone: string;
-
-  @Field()
-  hospitalID: string;
+  departmentID: string;
 }
 
 @InputType()
-export class CreateDepartmentInput extends BaseInput {}
+export class CreateAreaInput extends BaseInput {}
 
 @InputType()
-export class UpdateDepartmentInput extends BaseInput {}
+export class UpdateAreaInput extends BaseInput {}
