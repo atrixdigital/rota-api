@@ -7,6 +7,7 @@ import {
   ObjectID,
   ObjectIdColumn
 } from "typeorm";
+import { Department } from "./Department";
 import BaseMethods from "./shared/baseMethods";
 import { User } from "./User";
 
@@ -28,4 +29,7 @@ export class Role extends BaseEntity {
       where: { roleID: this.id }
     });
   }
+
+  @Field(() => [Department])
+  departments: Department[];
 }

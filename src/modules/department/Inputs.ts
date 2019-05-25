@@ -13,7 +13,7 @@ class BaseInput {
   phone: string;
 
   @Field()
-  hospitalID: string;
+  managerID: string;
 }
 
 @InputType()
@@ -21,3 +21,21 @@ export class CreateDepartmentInput extends BaseInput {}
 
 @InputType()
 export class UpdateDepartmentInput extends BaseInput {}
+
+@InputType()
+export class DepartmentIDInput {
+  @Field(() => String)
+  departmentID: string;
+}
+
+@InputType()
+export class AssignDepartmentRolesInput extends DepartmentIDInput {
+  @Field(() => [String])
+  roleIDs: string[];
+}
+
+@InputType()
+export class AssignDepartmentAreasInput extends DepartmentIDInput {
+  @Field(() => [String])
+  areaIDs: string[];
+}

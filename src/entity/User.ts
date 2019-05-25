@@ -71,8 +71,8 @@ export class User extends BaseEntity {
     });
   }
 
-  @Column({ nullable: true })
-  departmentID?: string;
+  // @Column({ nullable: true })
+  // departmentID?: string;
 
   @Column({ nullable: true })
   areaID?: string;
@@ -93,10 +93,11 @@ export class User extends BaseEntity {
         }
       });
     }
-    if (!this.departmentID) {
-      return null;
-    }
-    return BaseMethods.getRelationData(Department, this.departmentID);
+    return null;
+    // if (!this.departmentID) {
+    //   return null;
+    // }
+    // return BaseMethods.getRelationData(Department, this.departmentID);
   }
 
   @Field(() => Area, { nullable: true })

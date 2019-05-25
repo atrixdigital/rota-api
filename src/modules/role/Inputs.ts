@@ -12,3 +12,15 @@ export class CreateRoleInput extends BaseInput {}
 
 @InputType()
 export class UpdateRoleInput extends BaseInput {}
+
+@InputType()
+export class RoleIDInput {
+  @Field(() => String)
+  roleID: string;
+}
+
+@InputType()
+export class AssignRoleDepartmentsInput extends RoleIDInput {
+  @Field(() => [String])
+  departmentIDs: string[];
+}

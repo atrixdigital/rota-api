@@ -1,13 +1,8 @@
 import { Field, ID, ObjectType } from "type-graphql";
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  Index,
-  ObjectID,
-  ObjectIdColumn
-} from "typeorm";
+import { BaseEntity, Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
+import { Area } from "./Area";
 import { Hospital } from "./Hospital";
+import { Role } from "./Role";
 import BaseMethods from "./shared/baseMethods";
 import { User } from "./User";
 
@@ -34,8 +29,13 @@ export class Department extends BaseEntity {
   hospitalID: string;
 
   @Column()
-  @Index({ unique: true })
   managerID: string;
+
+  @Field(() => [Role])
+  roles: Role[];
+
+  @Field(() => [Area])
+  areas: Area[];
 
   @Field(() => Hospital, { nullable: true })
   async hospital(): Promise<Hospital | null> {

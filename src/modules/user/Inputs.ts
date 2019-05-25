@@ -26,9 +26,6 @@ class BaseInput {
   roleID: string;
 
   @Field({ nullable: true })
-  departmentID?: string;
-
-  @Field({ nullable: true })
   areaID?: string;
 }
 

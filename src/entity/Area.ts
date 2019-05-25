@@ -8,7 +8,6 @@ import {
   ObjectIdColumn
 } from "typeorm";
 import { Department } from "./Department";
-import BaseMethods from "./shared/baseMethods";
 
 @ObjectType()
 @Entity()
@@ -22,11 +21,14 @@ export class Area extends BaseEntity {
   @Index({ unique: true })
   title: string;
 
-  @Column()
-  departmentID: string;
+  // @Column()
+  // departmentID: string;
 
-  @Field(() => Department, { nullable: true })
-  async department(): Promise<Department | null> {
-    return BaseMethods.getRelationData(Department, this.departmentID);
-  }
+  // @Field(() => Department, { nullable: true })
+  // async department(): Promise<Department | null> {
+  //   return BaseMethods.getRelationData(Department, this.departmentID);
+  // }
+
+  @Field(() => [Department])
+  departments: Department[];
 }

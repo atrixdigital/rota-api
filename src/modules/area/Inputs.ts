@@ -5,9 +5,6 @@ import { Field, InputType } from "type-graphql";
 class BaseInput {
   @Field()
   title: string;
-
-  @Field()
-  departmentID: string;
 }
 
 @InputType()
@@ -15,3 +12,15 @@ export class CreateAreaInput extends BaseInput {}
 
 @InputType()
 export class UpdateAreaInput extends BaseInput {}
+
+@InputType()
+export class AreaIDInput {
+  @Field(() => String)
+  areaID: string;
+}
+
+@InputType()
+export class AssignAreaDepartmentsInput extends AreaIDInput {
+  @Field(() => [String])
+  departmentIDs: string[];
+}
