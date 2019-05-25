@@ -9,7 +9,6 @@ import {
 } from "typeorm";
 import { Area } from "./Area";
 import { Department } from "./Department";
-import { Hospital } from "./Hospital";
 import { Role } from "./Role";
 import { Schedule } from "./Schedule";
 import BaseMethods from "./shared/baseMethods";
@@ -62,17 +61,8 @@ export class User extends BaseEntity {
     return BaseMethods.getRelationData(Role, this.roleID);
   }
 
-  @Field(() => Hospital, { nullable: true })
-  async hopital(): Promise<Hospital | null> {
-    return BaseMethods.getRelationDataCondition(Hospital, {
-      where: {
-        adminID: this.id.toString()
-      }
-    });
-  }
-
-  // @Column({ nullable: true })
-  // departmentID?: string;
+  @Column({ nullable: true })
+  departmentID?: string;
 
   @Column({ nullable: true })
   areaID?: string;
@@ -93,11 +83,10 @@ export class User extends BaseEntity {
         }
       });
     }
-    return null;
-    // if (!this.departmentID) {
-    //   return null;
-    // }
-    // return BaseMethods.getRelationData(Department, this.departmentID);
+    if (!this.departmentID) {
+      return null;
+    }
+    return BaseMethods.getRelationData(Department, this.departmentID);
   }
 
   @Field(() => Area, { nullable: true })

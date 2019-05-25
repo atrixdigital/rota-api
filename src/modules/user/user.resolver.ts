@@ -132,7 +132,7 @@ export class UserResolver extends BaseResolver {
     if (!user) {
       return new Error("User not found.");
     }
-    const { appproved, confirmed } = user;
+    // const { appproved, confirmed } = user;
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
       return new Error("Password is incorrect");
@@ -147,9 +147,9 @@ export class UserResolver extends BaseResolver {
     }
     if (title !== "Admin") {
       // check for confimed and approved
-      if (!appproved && !confirmed) {
-        return new Error("Check your email inbox");
-      }
+      // if (!appproved && !confirmed) {
+      //   return new Error("Check your email inbox");
+      // }
     }
     ctx.req.session!.userID = user.id;
     return user;

@@ -1,8 +1,8 @@
 import { Field, ID, ObjectType } from "type-graphql";
 import { BaseEntity, Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 import { Area } from "./Area";
-import { Hospital } from "./Hospital";
 import { Role } from "./Role";
+import { Schedule } from "./Schedule";
 import BaseMethods from "./shared/baseMethods";
 import { User } from "./User";
 
@@ -26,9 +26,6 @@ export class Department extends BaseEntity {
   phone: string;
 
   @Column()
-  hospitalID: string;
-
-  @Column()
   managerID: string;
 
   @Field(() => [Role])
@@ -36,11 +33,6 @@ export class Department extends BaseEntity {
 
   @Field(() => [Area])
   areas: Area[];
-
-  @Field(() => Hospital, { nullable: true })
-  async hospital(): Promise<Hospital | null> {
-    return BaseMethods.getRelationData(Hospital, this.hospitalID);
-  }
 
   @Field(() => [User])
   async staffs(): Promise<User[]> {
@@ -54,5 +46,14 @@ export class Department extends BaseEntity {
   @Field(() => User)
   async manager(): Promise<User | null> {
     return BaseMethods.getRelationData(User, this.managerID);
+  }
+
+  @Field(() => [Schedule])
+  async schedules(): Promise<Schedule[]> {
+    return BaseMethods.getMultiRelationData(Schedule, {
+      where: {
+        deparmtnetID: this.id.toString()
+      }
+    });
   }
 }

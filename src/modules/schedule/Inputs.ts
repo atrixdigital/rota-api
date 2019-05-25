@@ -9,13 +9,28 @@ class BaseInput {
   endTime: string;
 
   @Field()
-  totalHours: number;
+  startDay: number;
+
+  @Field({ nullable: true })
+  notes?: string;
+
+  @Field()
+  coreShift: string;
 
   @Field({ nullable: true })
   joinTime?: string;
 
+  @Field({ nullable: true })
+  staffID?: string;
+
   @Field()
-  staffID: string;
+  roleID: string;
+
+  @Field()
+  areaID: string;
+
+  @Field({ nullable: true })
+  departmentID?: string;
 }
 
 @InputType()
