@@ -3,19 +3,22 @@ import { Field, InputType } from "type-graphql";
 @InputType()
 class BaseInput {
   @Field()
-  startTime: string;
+  startTime: number;
 
   @Field()
-  endTime: string;
-
-  @Field()
-  startDay: number;
+  endTime: number;
 
   @Field({ nullable: true })
   notes?: string;
 
-  @Field()
-  coreShift: string;
+  @Field({ nullable: true })
+  coreShift?: boolean;
+
+  @Field({ nullable: true })
+  locumShift?: boolean;
+
+  @Field({ nullable: true })
+  staffName?: string;
 
   @Field({ nullable: true })
   joinTime?: string;

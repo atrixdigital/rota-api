@@ -20,7 +20,7 @@ export class ScheduleResolver extends BaseResolver {
   @Query(() => [Schedule], { name: `getMySchedules` })
   async getMySchedules(
     @Ctx() ctx: MyContext,
-    @Arg("startDay", () => Number) startDay: number
+    @Arg("startDate", () => Number) startDate: number
   ): Promise<Schedule[]> {
     const userID = ctx.req.session!.userID;
     const department = await Department.findOne({
@@ -29,8 +29,18 @@ export class ScheduleResolver extends BaseResolver {
     if (!department) {
       return [];
     }
-    return Schedule.find({
-      where: { departmentID: department.id.toString(), startDay }
+    const schedules = await Schedule.find({
+      where: { departmentID: department.id.toString() }
+    });
+    return schedules.filter(({ startTime }) => {
+      const withOutTime = {
+        startTime: new Date(startTime).setHours(0, 0, 0, 0),
+        startDate: new Date(startDate).setHours(0, 0, 0, 0)
+      };
+      return (
+        new Date(withOutTime.startTime).getTime() ===
+        new Date(withOutTime.startDate).getTime()
+      );
     });
   }
 }

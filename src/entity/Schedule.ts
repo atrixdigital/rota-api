@@ -15,23 +15,27 @@ export class Schedule extends BaseEntity {
 
   @Field()
   @Column()
-  startTime: string;
+  startTime: number;
 
   @Field()
   @Column()
-  endTime: string;
-
-  @Field()
-  @Column()
-  startDay: number;
+  endTime: number;
 
   @Field({ nullable: true })
   @Column({ nullable: true })
   notes?: string;
 
-  @Field()
-  @Column()
-  coreShift: string;
+  @Field({ defaultValue: false, nullable: true })
+  @Column({ default: false, nullable: true })
+  coreShift?: boolean;
+
+  @Field({ defaultValue: false, nullable: true })
+  @Column({ default: false, nullable: true })
+  locumShift?: boolean;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  staffName?: string;
 
   @Field({ nullable: true })
   @Column({ nullable: true })
