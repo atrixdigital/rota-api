@@ -1,35 +1,35 @@
-import bcrypt from "bcryptjs";
+import bcrypt from 'bcryptjs';
 import {
   Arg,
   Ctx,
   Mutation,
   Query,
   Resolver,
-  UseMiddleware
-} from "type-graphql";
-import { v4 } from "uuid";
-import { Role } from "../../entity/Role";
-import { User } from "../../entity/User";
-import { redis } from "../../redis";
-import { MyContext } from "../../types/MyContext";
-import { createConfirmationUrl } from "../../utils/createConfirmationUrl";
-import { sendEmail } from "../../utils/sendEmail";
+  UseMiddleware,
+} from 'type-graphql';
+import { v4 } from 'uuid';
+import { Role } from '../../entity/Role';
+import { User } from '../../entity/User';
+import { redis } from '../../redis';
+import { MyContext } from '../../types/MyContext';
+import { createConfirmationUrl } from '../../utils/createConfirmationUrl';
+import { sendEmail } from '../../utils/sendEmail';
 import {
   confirmUserPrefix,
-  forgotPasswordPrefix
-} from "../constants/redisPrefixes";
-import { isAuth } from "../middleware/isAuth";
-import { createBaseResolver } from "../shared/createBaseResolver";
+  forgotPasswordPrefix,
+} from '../constants/redisPrefixes';
+import { isAuth } from '../middleware/isAuth';
+import { createBaseResolver } from '../shared/createBaseResolver';
 import {
   ChangePasswordInput,
   CreateUserInput,
   GetUserByFilterInput,
   GetUserByRoleInput,
-  UpdateUserInput
-} from "./Inputs";
+  UpdateUserInput,
+} from './Inputs';
 
 const BaseResolver = createBaseResolver(
-  "User",
+  'User',
   User,
   CreateUserInput,
   UpdateUserInput,
@@ -41,11 +41,11 @@ export class UserResolver extends BaseResolver {
   @UseMiddleware(isAuth)
   @Query(() => [User], { name: `getAllUserByRole` })
   async getAllUserByRole(
-    @Arg("data", () => GetUserByRoleInput, { nullable: true })
+    @Arg('data', () => GetUserByRoleInput, { nullable: true })
     data?: GetUserByRoleInput | null
   ) {
     // get admin role
-    const role = await Role.findOne({ where: { title: "Admin" } });
+    const role = await Role.findOne({ where: { title: 'Admin' } });
     if (!role) {
       return [];
     }
@@ -54,18 +54,18 @@ export class UserResolver extends BaseResolver {
       selectedRole = await Role.find({
         where: {
           title:
-            data.roleType === "*"
-              ? { $nin: ["Admin", "Manager"] }
-              : data.roleType
-        }
+            data.roleType === '*'
+              ? { $nin: ['Admin', 'Manager'] }
+              : data.roleType,
+        },
       });
     }
     const user = await User.find({
-      where: { roleID: { $ne: role.id.toString() } }
+      where: { roleID: { $ne: role.id.toString() } },
     });
     return user.filter(({ roleID }) =>
       selectedRole && selectedRole.length > 0
-        ? !!selectedRole.find(r => r.id.toString() === roleID)
+        ? !!selectedRole.find((r) => r.id.toString() === roleID)
         : true
     );
   }
@@ -73,11 +73,11 @@ export class UserResolver extends BaseResolver {
   @UseMiddleware(isAuth)
   @Query(() => [User], { name: `getAllUserByFilter` })
   async getAllUserByFiler(
-    @Arg("data", () => GetUserByFilterInput, { nullable: true })
+    @Arg('data', () => GetUserByFilterInput, { nullable: true })
     data?: GetUserByFilterInput | null
   ) {
     const users = await this.getAllUserByRole({
-      roleType: data && data.roleType ? data.roleType : undefined
+      roleType: data && data.roleType ? data.roleType : undefined,
     });
     if (users && data && data.approved !== undefined) {
       if (data.approved) {
@@ -92,12 +92,12 @@ export class UserResolver extends BaseResolver {
   }
 
   @Mutation(() => User, { name: `register` })
-  async register(@Arg("data", () => CreateUserInput) data: CreateUserInput) {
+  async register(@Arg('data', () => CreateUserInput) data: CreateUserInput) {
     const hashedPassword = await bcrypt.hash(data.password, 12);
     const user = await super.create({
       ...data,
       password: hashedPassword,
-      approved: true
+      approved: true,
     });
     await sendEmail(data.email, await createConfirmationUrl(user.id));
     return user;
@@ -105,7 +105,7 @@ export class UserResolver extends BaseResolver {
 
   @Mutation(() => [User], { name: `registerMulti` })
   async registerMulti(
-    @Arg("data", () => [CreateUserInput]) data: CreateUserInput[]
+    @Arg('data', () => [CreateUserInput]) data: CreateUserInput[]
   ) {
     const users: User[] = [];
     for (let i = 0; i < data.length; i++) {
@@ -124,28 +124,28 @@ export class UserResolver extends BaseResolver {
 
   @Mutation(() => User)
   async login(
-    @Arg("email") email: string,
-    @Arg("password") password: string,
+    @Arg('email') email: string,
+    @Arg('password') password: string,
     @Ctx() ctx: MyContext
   ): Promise<User | Error> {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return new Error("User not found.");
+      return new Error('User not found.');
     }
     // const { appproved, confirmed } = user;
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      return new Error("Password is incorrect");
+      return new Error('Password is incorrect');
     }
     const userRole = await user.role();
     if (!userRole) {
-      return new Error("User has no role assigned yet");
+      return new Error('User has no role assigned yet');
     }
     const { title } = userRole;
-    if (title !== "Admin" && title !== "Manager") {
-      return new Error("No Access");
+    if (title !== 'Admin' && title !== 'Manager') {
+      return new Error('No Access');
     }
-    if (title !== "Admin") {
+    if (title !== 'Admin') {
       // check for confimed and approved
       // if (!appproved && !confirmed) {
       //   return new Error("Check your email inbox");
@@ -156,7 +156,7 @@ export class UserResolver extends BaseResolver {
   }
 
   @Mutation(() => Boolean)
-  async confirmUser(@Arg("token") token: string): Promise<boolean> {
+  async confirmUser(@Arg('token') token: string): Promise<boolean> {
     const userId = await redis.get(confirmUserPrefix + token);
     if (!userId) {
       return false;
@@ -174,8 +174,8 @@ export class UserResolver extends BaseResolver {
   @UseMiddleware(isAuth)
   @Mutation(() => Boolean, { name: `approvedUser` })
   async approvedUser(
-    @Arg("approved", () => Boolean) approved: boolean,
-    @Arg("userID", () => String) userID: string
+    @Arg('approved', () => Boolean) approved: boolean,
+    @Arg('userID', () => String) userID: string
   ) {
     const user = await User.findOne(userID);
     if (!user) {
@@ -187,13 +187,13 @@ export class UserResolver extends BaseResolver {
   }
 
   @Mutation(() => Boolean)
-  async forgotPassword(@Arg("email") email: string): Promise<boolean> {
+  async forgotPassword(@Arg('email') email: string): Promise<boolean> {
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return true;
     }
     const token = v4();
-    await redis.set(forgotPasswordPrefix + token, user.id, "ex", 60 * 60 * 24); // 1 day expiration
+    await redis.set(forgotPasswordPrefix + token, user.id, 'ex', 60 * 60 * 24); // 1 day expiration
     await sendEmail(
       email,
       `${process.env.FRONTEND_URL}/user/change-password/${token}`
@@ -203,7 +203,7 @@ export class UserResolver extends BaseResolver {
 
   @Mutation(() => User, { nullable: true })
   async changePassword(
-    @Arg("data")
+    @Arg('data')
     { token, password }: ChangePasswordInput,
     @Ctx() ctx: MyContext
   ): Promise<User | null> {
@@ -225,12 +225,12 @@ export class UserResolver extends BaseResolver {
   @Mutation(() => Boolean)
   async logout(@Ctx() ctx: MyContext): Promise<Boolean> {
     return new Promise((res, rej) =>
-      ctx.req.session!.destroy(err => {
+      ctx.req.session!.destroy((err) => {
         if (err) {
           console.log(err);
           return rej(false);
         }
-        ctx.res.clearCookie("qid");
+        ctx.res.clearCookie('qid');
         return res(true);
       })
     );
